@@ -1,6 +1,50 @@
 # Easy-VLMEval
 
+一个简单易用的视觉语言模型评估工具，专注于基准测试的下载、运行和评估。
 
+## 功能特点
+
+- 支持多个基准测试数据集（MMMU, MathVista等）
+- 基于vLLM的本地API服务
+- 灵活的提示词模板管理
+- 简单的评估流程
+
+## 目录结构
+
+```
+easy-vlmeval/
+├── benchmarks/          # 基准测试数据集
+├── configs/            # 配置文件
+│   ├── prompts/       # 提示词模板
+│   └── models/        # 模型配置
+├── src/               # 源代码
+│   ├── downloader.py  # 数据集下载
+│   ├── evaluator.py   # 评估脚本
+│   └── utils.py       # 工具函数
+└── scripts/           # 运行脚本
+```
+
+## 安装
+
+```bash
+pip install -r requirements.txt
+```
+
+## 使用方法
+
+1. 配置模型和提示词模板
+2. 下载基准测试数据集
+3. 运行评估
+
+## 配置说明
+
+在 `configs/prompts/` 目录下创建提示词模板，在 `configs/models/` 目录下配置模型参数。
+
+## 评估流程
+
+1. 启动vLLM服务
+2. 运行评估脚本
+3. 查看评估结果
 
 ## Getting started
 

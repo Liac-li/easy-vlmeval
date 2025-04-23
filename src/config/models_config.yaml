@@ -1,0 +1,11 @@
+
+vllm:
+  host: "localhost"
+  port: 8000
+  tensor_parallel_size: 1   # GPU数量
+  trust_remote_code: true 
+  api_key:
+  
+openai:
+  api_key:
+  api_base_url:
