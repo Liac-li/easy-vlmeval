@@ -1,4 +1,4 @@
 mathvista:
-  local_dir: null
+  local_dir: benchmarks/MathVista
   hf_path: AI4Math/MathVista
   
