@@ -3,14 +3,16 @@ MathVista数据集加载器
 """
 
 from typing import Literal, Optional, Dict, Any
-from datasets import load_dataset, Dataset
 from pathlib import Path
 import json
 import base64
 from PIL import Image
-import io
+from io import BytesIO
+from datasets import load_dataset
+from torch.utils.data import Dataset
+import os
 
-class MathVistaDataset:
+class MathVistaDataset(Dataset):
     def __init__(
         self,
         split: Literal["test", "testmini"] = "testmini",
@@ -24,10 +26,11 @@ class MathVistaDataset:
             data_dir: 数据目录路径
         """
         self.split = split
-        self.dataset_path = data_dir
-        self.data_dir = Path(self.dataset_path) / "data"
-        self.image_dir = Path(self.dataset_path) / "images"
+        self.dataset_path = Path(os.path.abspath(data_dir))
+        self.data_dir = self.dataset_path / "data"
         self.dataset = self._load_dataset()
+
+        self.dataset = self.convert_to_inference_format()
         
     def _load_dataset(self) -> Dataset:
         """
@@ -68,10 +71,9 @@ class MathVistaDataset:
         
     def __getitem__(self, idx: int) -> dict:
         """获取单个样本"""
-        ret = self.convert_to_inference_format(idx)
-        return ret
+        return self.dataset[idx]
         
-    def convert_to_inference_format(self, idx: int) -> Dict[str, Any]:
+    def convert_to_inference_format(self) -> Dict[str, Any]:
         """
         将数据集样本转换为推理格式
         
@@ -81,29 +83,26 @@ class MathVistaDataset:
         Returns:
             Dict: 转换后的数据格式
         """
-        sample = self.dataset[idx]
+        converted_datas = []
+        from tqdm import tqdm
+        for i in tqdm(range(len(self.dataset)), desc="转换数据格式", unit="样本"):
+            sample = self.dataset[i]
+            
+            # 构建转换后的数据
+            converted_data = {
+                "id": sample['pid'],
+                "query": sample['query'],
+                "answer": sample['answer'],
+                "choices": sample['choices'] if sample['choices'] else None,
+                "image": {
+                    "path": str(self.dataset_path / sample['image']),
+                    "bytes": sample['decoded_image']
+                },
+                "origin_data": sample  # 保留原始数据
+            }
+            converted_datas.append(converted_data)
         
-        # 获取图像数据
-        
-        # 将PIL图像转换为base64
-        # buffered = io.BytesIO()
-        # image.save(buffered, format="PNG")
-        # img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-        
-        # 构建转换后的数据
-        converted_data = {
-            "id": sample['pid'],
-            "query": sample['query'],
-            "answer": sample['answer'],
-            "choices": sample['choices'] if sample['choices'] else None,
-            "image": {
-                "path": str(self.image_dir / sample['image']),
-                "bytes": sample['decoded_image']
-            },
-            "origin_data": sample  # 保留原始数据
-        }
-        
-        return converted_data
+        return converted_datas
         
     @property
     def features(self) -> dict:
@@ -126,7 +125,5 @@ if __name__ == "__main__":
     #     # execute code
     #     exec(example['code'])
         
-    dataset = MathVistaDataset(split="test")
+    dataset = MathVistaDataset(split="testmini")
     print(dataset[0])
-
-   
