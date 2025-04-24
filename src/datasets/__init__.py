@@ -6,4 +6,8 @@ from .mmmu import MMMUDataset
 from .mathvista import MathVistaDataset
 from .downloader import DatasetDownloader
 
+supported_datasets = {
+    'mathvista': MathVistaDataset,
+}
+
 __all__ = ['MMMUDataset', 'MathVistaDataset', 'DatasetDownloader']

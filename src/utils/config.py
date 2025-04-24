@@ -31,3 +31,7 @@ def load_config(config_path: str = 'src/config') -> Dict[str, Any]:
             config_dict[config_type]["config"] = config
 
     return config_dict
+
+if __name__ == "__main__":
+    config = load_config()
+    print(config['datasets']['config'])
