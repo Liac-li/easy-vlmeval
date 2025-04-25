@@ -4,10 +4,12 @@
 
 # 导出数据集类
 from .mathvista import MathVistaDataset
+from .mmmath import MMMathDataset
 
 # 支持的数据集映射
 supported_datasets = {
     'mathvista': MathVistaDataset,
+    'mmmath': MMMathDataset,
 }
 
-__all__ = ['MathVistaDataset']
+__all__ = ['MathVistaDataset', 'MMMathDataset']

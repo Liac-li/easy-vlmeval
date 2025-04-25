@@ -3,9 +3,11 @@
 """
 
 from .mathvista import MathVistaEvaluator
+from .mmmath import MMMathEvaluator
 
 supported_evaluators = {
-    "mathvista": MathVistaEvaluator
+    "mathvista": MathVistaEvaluator,
+    "mmmath": MMMathEvaluator
 }
 
-__all__ = ['MathVistaEvaluator']
+__all__ = ['MathVistaEvaluator', 'MMMathEvaluator']

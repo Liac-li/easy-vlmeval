@@ -46,7 +46,7 @@ def main(args, config):
     
     dataset_config = config['datasets']['config'][dataset_name]
     dataset_class = supported_datasets[dataset_name]
-    dataset = dataset_class(split=dataset_split, data_dir=dataset_config['local_dir'])[:20] #!
+    dataset = dataset_class(split=dataset_split, data_dir=dataset_config['local_dir']) #!
     logger.info(f"Dataset {dataset_name} loaded with size: {len(dataset)}")
 
     # 获取prompt模板
@@ -97,17 +97,17 @@ def main(args, config):
         evaluator = evaluator_class(results_file_path=output_path, results=all_results)
         evaluated_results = evaluator.evaluate()
 
-    # 保存评价过的结果
-    if args.output_dir:
-        os.makedirs(args.output_dir, exist_ok=True)
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        output_path = os.path.join(
-            args.output_dir,
-            f"{dataset_name}_{dataset_split}_{args.model}_evaluated_results_{timestamp}.json"
-        )
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(evaluated_results, f, ensure_ascii=False, indent=2)
-        logger.info(f"Results saved to {output_path}")
+        # 保存评价过的结果
+        if args.output_dir:
+            os.makedirs(args.output_dir, exist_ok=True)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            output_path = os.path.join(
+                args.output_dir,
+                f"{dataset_name}_{dataset_split}_{args.model}_evaluated_results_{timestamp}.json"
+            )
+            with open(output_path, 'w', encoding='utf-8') as f:
+                json.dump(evaluated_results, f, ensure_ascii=False, indent=2)
+            logger.info(f"Results saved to {output_path}")
 
 
 

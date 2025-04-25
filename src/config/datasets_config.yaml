@@ -2,3 +2,7 @@ mathvista:
   local_dir: data/MathVista
   hf_path: AI4Math/MathVista
   
+mmmath:
+  local_dir: data/MM_Math
+  hf_path: THU-KEG/MM_Math
+  
