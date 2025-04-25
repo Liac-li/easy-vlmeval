@@ -2,7 +2,7 @@
 MathVista数据集加载器
 """
 
-from typing import Literal, Optional, Dict, Any
+from typing import Literal, Optional, Dict, Any, List
 from pathlib import Path
 import json
 import base64
@@ -16,7 +16,7 @@ class MathVistaDataset(Dataset):
     def __init__(
         self,
         split: Literal["test", "testmini"] = "testmini",
-        data_dir: str = "benchmarks/MathVista"
+        data_dir: str = "data/MathVista"
     ):
         """
         初始化MathVista数据集
@@ -73,7 +73,7 @@ class MathVistaDataset(Dataset):
         """获取单个样本"""
         return self.dataset[idx]
         
-    def convert_to_inference_format(self) -> Dict[str, Any]:
+    def convert_to_inference_format(self) -> List[Dict[str, Any]]:
         """
         将数据集样本转换为推理格式
         
@@ -87,6 +87,7 @@ class MathVistaDataset(Dataset):
         from tqdm import tqdm
         for i in tqdm(range(len(self.dataset)), desc="转换数据格式", unit="样本"):
             sample = self.dataset[i]
+            # 删除decoded_image字段
             
             # 构建转换后的数据
             converted_data = {
@@ -98,8 +99,11 @@ class MathVistaDataset(Dataset):
                     "path": str(self.dataset_path / sample['image']),
                     "bytes": sample['decoded_image']
                 },
-                "origin_data": sample  # 保留原始数据
             }
+
+            if 'decoded_image' in sample:
+                del sample['decoded_image']
+            converted_data['origin_data'] = sample
             converted_datas.append(converted_data)
         
         return converted_datas

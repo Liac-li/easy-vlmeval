@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 
 from benchmarks import supported_datasets
-
+from evaluator import supported_evaluators
 from utils.config import load_config
 from utils.logger import setup_logger
 from tasks import QwenVLRunner
@@ -60,7 +60,6 @@ def main(args, config):
     # 存储所有结果
     all_results = []
     
-    # 使用线程池进行并行处理
     for s_idx in range(0, len(dataset), args.num_workers):
         e_idx = min(s_idx + args.num_workers, len(dataset))
         samples = dataset[s_idx:e_idx]
@@ -76,7 +75,8 @@ def main(args, config):
                 'id': sample['id'],
                 'query': sample['query'],
                 'image': sample['image']['path'],
-                'response': result
+                'response': result,
+                'origin_data': sample['origin_data']
             })
 
     # 保存结果
@@ -93,8 +93,23 @@ def main(args, config):
 
     # 如果需要评估
     if args.eval:
-        # TODO: 实现评估逻辑
-        pass
+        evaluator_class = supported_evaluators[dataset_name]
+        evaluator = evaluator_class(results_file_path=output_path, results=all_results)
+        evaluated_results = evaluator.evaluate()
+
+    # 保存评价过的结果
+    if args.output_dir:
+        os.makedirs(args.output_dir, exist_ok=True)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        output_path = os.path.join(
+            args.output_dir,
+            f"{dataset_name}_{dataset_split}_{args.model}_evaluated_results_{timestamp}.json"
+        )
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(evaluated_results, f, ensure_ascii=False, indent=2)
+        logger.info(f"Results saved to {output_path}")
+
+
 
 
 if __name__ == "__main__":
