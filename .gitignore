@@ -1,4 +1,6 @@
+outputs/
 benchmarks/
+
 
 # Python
 __pycache__/
