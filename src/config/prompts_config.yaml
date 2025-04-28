@@ -1,5 +1,6 @@
 prompts:
   mmmu:
+
     system: "你是一个专业的AI助手，擅长解决多模态问题。请仔细分析问题并给出准确的答案。"
     user: |
       请分析以下问题并给出答案：
@@ -16,8 +17,6 @@ prompts:
     user: |
       请分析以下数学问题并给出答案：
       
-      问题：{question}
-      
-      图像描述：{image_description}
+      {query}
       
       请给出详细的解答过程。 
