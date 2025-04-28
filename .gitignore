@@ -1,6 +1,7 @@
 data
 outputs
 
+
 # Python
 __pycache__/
 *.py[cod]

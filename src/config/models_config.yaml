@@ -1,4 +1,3 @@
-
 vllm:
   host: "localhost"
   port: 7788
