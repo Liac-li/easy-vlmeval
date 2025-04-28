@@ -11,6 +11,7 @@ import math
 # import pdb
 import os
 import argparse
+
 from utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -411,7 +412,7 @@ class MMMathEvaluator:
         self.precision = precision
         self.scorer = AutoScoringJudge()
 
-    def evaluate(self, ground_solution: str = "answer", model_solution: str = "response"):
+    def evaluate(self, ground_solution: str = "solution", model_solution: str = "response"):
         """
         评估模型结果
         Args:
@@ -455,7 +456,7 @@ class MMMathEvaluator:
                 year[origin_data['year']]['total'] += 1
 
             # 获取答案和预测
-            exp1 = data.get(ground_solution, '')
+            exp1 = origin_data.get(ground_solution, '')
             exp2 = data.get(model_solution, '')
 
             # 评估答案
@@ -515,14 +516,13 @@ class MMMathEvaluator:
         logger.info("Final Evaluation Results:")
         logger.info(json.dumps(evaluation_results, indent=2, ensure_ascii=False))
 
-        return evaluation_results
+        return self.results
 
 
 if __name__ == "__main__":
-    # 添加项目根目录到 Python 路径
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-    
+
     evaluator = MMMathEvaluator(
         results_file_path="outputs/mmmath_train_vllm_results_20250425_172802.json",
     )
-    results, scores = evaluator.evaluate()
+    results = evaluator.evaluate()
+    print(results[0])
