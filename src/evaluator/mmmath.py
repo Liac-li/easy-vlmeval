@@ -6,7 +6,7 @@ import json
 import sympy as sp
 from sympy import simplify, Eq, sympify, Pow, pi
 from sympy.parsing.latex import parse_latex
-# import sys
+import sys
 import math
 # import pdb
 import os
@@ -519,8 +519,10 @@ class MMMathEvaluator:
 
 
 if __name__ == "__main__":
-
+    # 添加项目根目录到 Python 路径
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    
     evaluator = MMMathEvaluator(
-        results_file_path="outputs/mmmath_test_vllm_results_20250425_104525.json",
+        results_file_path="outputs/mmmath_train_vllm_results_20250425_172802.json",
     )
     results, scores = evaluator.evaluate()

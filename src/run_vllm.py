@@ -46,7 +46,7 @@ def main(args, config):
     
     dataset_config = config['datasets']['config'][dataset_name]
     dataset_class = supported_datasets[dataset_name]
-    dataset = dataset_class(split=dataset_split, data_dir=dataset_config['local_dir']) #!
+    dataset = dataset_class(split=dataset_split, data_dir=dataset_config['local_dir'])[:20] #!
     logger.info(f"Dataset {dataset_name} loaded with size: {len(dataset)}")
 
     # 获取prompt模板
@@ -82,6 +82,8 @@ def main(args, config):
     # 保存结果
     if args.output_dir:
         os.makedirs(args.output_dir, exist_ok=True)
+        # 确保目录有正确的权限
+        os.chmod(args.output_dir, 0o777)
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         output_path = os.path.join(
             args.output_dir,
