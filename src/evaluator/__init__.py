@@ -4,10 +4,12 @@
 
 from .mathvista import MathVistaEvaluator
 from .mmmath import MMMathEvaluator
+from .mmmu import MMMUEvaluator
 
 supported_evaluators = {
     "mathvista": MathVistaEvaluator,
-    "mmmath": MMMathEvaluator
+    "mmmath": MMMathEvaluator,
+    "mmmu": MMMUEvaluator
 }
 
-__all__ = ['MathVistaEvaluator', 'MMMathEvaluator']
+__all__ = ['MathVistaEvaluator', 'MMMathEvaluator', 'MMMUEvaluator']
