@@ -46,6 +46,21 @@ pip install -r requirements.txt
 2. 运行评估脚本
 3. 查看评估结果
 
+## 数据说明
+```python
+    converted_data = {
+        "id": sample['pid'],
+        "query": sample['query'],
+        "answer": sample['answer'],
+        "choices": sample['choices'] if sample['choices'] else None,
+        "image": {
+            "path": str(self.image_dir / sample['image']),
+            "bytes": sample['decoded_image']
+        },
+        "origin_data": sample  # 保留原始数据
+    }
+```
+
 ## Getting started
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.

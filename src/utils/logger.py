@@ -18,6 +18,11 @@ def setup_logger(name: str, log_file: Optional[str] = None) -> logging.Logger:
         配置好的日志记录器
     """
     logger = logging.getLogger(name)
+    
+    # 如果 logger 已经有 handlers，说明已经被配置过，直接返回
+    if logger.handlers:
+        return logger
+        
     logger.setLevel(logging.INFO)
     
     # 创建控制台处理器
@@ -26,7 +31,8 @@ def setup_logger(name: str, log_file: Optional[str] = None) -> logging.Logger:
     
     # 创建格式化器
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        '%(levelname)s %(asctime)s [%(filename)s:%(lineno)d] %(message)s',
+        datefmt='%m-%d %H:%M:%S'
     )
     console_handler.setFormatter(formatter)
     

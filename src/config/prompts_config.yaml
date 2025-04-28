@@ -1,22 +1,6 @@
-prompts:
-  mmmu:
-
-    system: "你是一个专业的AI助手，擅长解决多模态问题。请仔细分析问题并给出准确的答案。"
-    user: |
-      请分析以下问题并给出答案：
-      
-      问题：{question}
-      
-      选项：
-      {options}
-      
-      请从以上选项中选择最合适的答案。
-      
-  mathvista:
-    system: "你是一个专业的数学问题解决助手，擅长分析数学问题和图像。"
-    user: |
-      请分析以下数学问题并给出答案：
-      
-      {query}
-      
-      请给出详细的解答过程。 
+r1_think_prompt:
+  system: "You are a good AI asisstent, help me to solve the questions."
+  user: |
+    {query}
+    You FIRST think about the reasoning process as an internal monologue and then provide the final answer.
+    The reasoning process MUST BE enclosed within <think> </think> tags. The final answer MUST BE put in \boxed{{}}.

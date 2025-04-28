@@ -1,11 +1,9 @@
-
 vllm:
   host: "localhost"
-  port: 8000
-  tensor_parallel_size: 1   # GPU数量
+  port: 7788
   trust_remote_code: true 
-  api_key:
+  api_key: api-lyt-78fd9
   
 openai:
-  api_key:
-  api_base_url:
+  api_key: sk-viE4vGraznKsTmxP458b38306e9b42F4863aCb1aD63a72F1
+  api_base_url: https://api.lmtchina.com/v1
