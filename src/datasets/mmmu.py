@@ -5,6 +5,7 @@ import os
 from typing import List, Dict, Any, Literal, Optional
 
 from datasets import load_dataset, concatenate_datasets
+from torch.utils.data import Dataset
 
 mmmu_default_config = """
 task_instructions:
@@ -198,7 +199,7 @@ def construct_prompt(sample, config):
     return res_dict
 
 
-class MMMUDataset:
+class MMMUDataset(Dataset):
 
     def __init__(self, 
                  split: Literal["dev", "test", "validation"] = "dev",
@@ -250,6 +251,12 @@ class MMMUDataset:
             converted_data_list.append(converted_data)
 
         return converted_data_list
+    
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, idx):
+        return self.data[idx]
             
 
 if __name__ == "__main__":
