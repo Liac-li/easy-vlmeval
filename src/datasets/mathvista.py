@@ -56,7 +56,7 @@ class MathvistaDataset:
             template: 提示词模板
             
         Returns:
-            构建好的提示词 prompts, images(list[image1, image2, ...])
+            构建好的提示词
         """
         return template["user"].format(**item)
 
