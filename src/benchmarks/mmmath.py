@@ -10,7 +10,9 @@ class MMMathDataset(Dataset):
     def __init__(
             self, 
             split: Literal["train"] = "train", 
-            data_dir: str = "data/MM_Math"):
+            data_dir: str = "data/MM_Math",
+            reuse_saved: str = None
+        ):
 
         # self.split = split
         self.data_dir = Path(os.path.abspath(data_dir))
@@ -18,7 +20,21 @@ class MMMathDataset(Dataset):
         self.dataset = self._load_dataset()
         
         self.dataset = self.convert_to_inference_format()
-
+        if reuse_saved:
+            self.saved_results_path = Path(os.path.abspath(reuse_saved))
+            self._clean_dataset()
+            
+    def _clean_dataset(self):
+        """
+        清理数据集, 删除已经推理过的样本
+        """ 
+        with open(self.saved_results_path, "r") as f:
+            saved_results = json.load(f)
+        saved_pids = [result['id'] for result in saved_results]
+        
+        # filter out the ids in saved
+        self.dataset = [item for item in self.dataset if item['pid'] not in saved_pids]
+            
     def _load_dataset(self):
 
         dataset = []

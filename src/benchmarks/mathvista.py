@@ -16,7 +16,8 @@ class MathVistaDataset(Dataset):
     def __init__(
         self,
         split: Literal["test", "testmini"] = "testmini",
-        data_dir: str = "data/MathVista"
+        data_dir: str = "data/MathVista",
+        reuse_saved: str = None
     ):
         """
         初始化MathVista数据集
@@ -28,9 +29,23 @@ class MathVistaDataset(Dataset):
         self.split = split
         self.dataset_path = Path(os.path.abspath(data_dir))
         self.data_dir = self.dataset_path / "data"
-        self.dataset = self._load_dataset()
+        self.dataset: Dataset = self._load_dataset()
 
-        self.dataset = self.convert_to_inference_format()
+        self.dataset: List[Dict[str, Any]] = self.convert_to_inference_format()
+        if reuse_saved:
+            self.saved_results_path = Path(os.path.abspath(reuse_saved))
+            self._clean_dataset()
+
+    def _clean_dataset(self):
+        """
+        清理数据集, 删除已经推理过的样本
+        """
+        with open(self.saved_results_path, "r") as f:
+            saved_results = json.load(f)
+        saved_pids = [result['id'] for result in saved_results]
+        
+        # filter out the ids in saved
+        self.dataset = [item for item in self.dataset if item['pid'] not in saved_pids]
         
     def _load_dataset(self) -> Dataset:
         """
