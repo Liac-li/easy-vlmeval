@@ -522,7 +522,7 @@ class MMMathEvaluator:
 if __name__ == "__main__":
 
     evaluator = MMMathEvaluator(
-        results_file_path="outputs/mmmath_train_vllm_results_20250425_172802.json",
+        results_file_path="/home/nfs05/yancy/easy-vllm/easy-vlmeval/output/checkpoint-667/mmmath_train_vllm_results_20250429_1736%.json",
     )
     results = evaluator.evaluate()
-    print(results[0])
+    # print(results[0])

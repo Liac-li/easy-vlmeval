@@ -5,7 +5,7 @@ import re
 from typing import List, Dict, Optional, Callable, Any, Union
 import json
 import pandas as pd
-
+from pathlib import Path
 from tasks.openai_runner import OpenAIRunner
 
 from utils.logger import setup_logger
@@ -346,5 +346,11 @@ class MathVistaEvaluator:
             
 if __name__ == "__main__":
     # export PYTHONPATH=$PYTHONPATH:/home/nfs06/liyt/easy-vlmeval/src
-    evaluator = MathVistaEvaluator(results_file_path="outputs/mathvista_testmini_vllm_results_20250424_211210.json")
+    evaluator = MathVistaEvaluator(results_file_path="/home/nfs05/yancy/easy-vllm/easy-vlmeval/output/mavis-grpo-90/mathvista_testmini_vllm_results_20250429_1042%.json")
+
     results = evaluator.evaluate()
+
+    save_dir = Path('outputs/qwen2.5-vl-grpo-90') 
+    save_path = save_dir / 'mathvista_testmini_vllm_results_evaluated.json'
+    with open(save_path, 'w', encoding='utf-8') as f:
+        json.dump(results, f, ensure_ascii=False, indent=2)
