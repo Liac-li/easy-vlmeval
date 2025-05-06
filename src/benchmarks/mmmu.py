@@ -202,7 +202,7 @@ def construct_prompt(sample, config):
 class MMMUDataset(Dataset):
 
     def __init__(self, 
-                 split: Literal["dev", "test", "validation"] = "dev",
+                 split: Literal["dev", "test", "validation"] = "validation",
                  data_dir: str = "data/MMMU",
                  reuse_saved: Optional[str] = None):
         """
@@ -219,12 +219,18 @@ class MMMUDataset(Dataset):
                 assert len(value) == 1, 'key {} has more than one value'.format(key)
                 self.config[key] = value[0]
 
+        # self.tgt_categories = CAT_SHORT2LONG.values()
+        self.tgt_categories = ['Biology', 'Chemistry', 'Geography', 'Math', 'Physics'] 
+
+
         self.data = self._load_dataset()
+        self._max_image_per_prompt = 1
         self.data = self.convert_to_inference_format()
+        
 
     def _load_dataset(self):
         sub_dataset_list = []
-        for subject in CAT_SHORT2LONG.values():
+        for subject in self.tgt_categories:
             sub_dataset = load_dataset(self.data_dir, subject, split=self.split)
             sub_dataset_list.append(sub_dataset)
         dataset = concatenate_datasets(sub_dataset_list)
@@ -236,6 +242,10 @@ class MMMUDataset(Dataset):
         for sample in self.data:
             sample = process_single_sample(sample)
             sample = construct_prompt(sample, self.config)
+             
+            # self._max_image_per_prompt = max(self._max_image_per_prompt, len(sample['image']))
+            if isinstance(sample['image'], list):
+                self._max_image_per_prompt = max(self._max_image_per_prompt, len(sample['image']))
 
             converted_data = {
                 "id": sample['id'],
@@ -257,7 +267,10 @@ class MMMUDataset(Dataset):
     
     def __getitem__(self, idx):
         return self.data[idx]
-            
+    
+    @property
+    def max_image_per_prompt(self):
+        return self._max_image_per_prompt
 
 if __name__ == "__main__":
     mmmu = MMMUDataset()

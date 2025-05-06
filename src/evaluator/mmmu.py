@@ -2,6 +2,7 @@
 from typing import Dict, Optional, List, Any, Tuple
 
 import json
+import pickle
 import re
 import random
 random.seed(42)
@@ -307,8 +308,12 @@ class MMMUEvaluator:
         self.subjects = list(CAT_SHORT2LONG.values()) # TODO: set as a parameter
         
     def _load_results(self, results_file_path: str) -> List[Dict[str, Any]]:
-        with open(results_file_path, 'r', encoding='utf-8') as fr:
-            results = json.load(fr)
+        if results_file_path.endswith('.pkl'):
+            with open(results_file_path, 'rb') as fr:
+                results = pickle.load(fr)
+        else:
+            with open(results_file_path, 'r', encoding='utf-8') as fr:
+                results = json.load(fr)
         return results
 
     def evaluate(self):
@@ -328,7 +333,7 @@ class MMMUEvaluator:
 
         evaluated_results_list = []
         evaluated_metric_dict = {}
-        for sub in self.subjects:
+        for sub in eval_results.keys():
             # Evaluating
             logger.info(f"Evaluating {sub}")
             sub_results = eval_results[sub]
@@ -343,6 +348,15 @@ class MMMUEvaluator:
             # Update eval_results
             evaluated_results_list.extend(eval_samples)
             evaluated_metric_dict.update({sub: metric_dict})
+        
+        # cal overall acc
+        overall_correct = 0
+        for res in evaluated_results_list:
+            if res['judge'] == 'Correct':
+                overall_correct += 1
+        overall_acc = overall_correct / len(evaluated_results_list)
+        evaluated_metric_dict['overall'] = {'acc': overall_acc, 'num_example': len(evaluated_results_list)}
+        
 
         logger.info(f"MMMU Evaluator Finished")
         logger.info(json.dumps(evaluated_metric_dict, indent=2))
@@ -361,6 +375,7 @@ class MMMUEvaluator:
                 eval_samples.append({
                     'id': res['id'],
                     'question': res_origin_data['question'],
+                    'question_type': res_origin_data['question_type'],
                     'answer': res_origin_data['answer'],
                     'response': response,
                     'parsed_pred': parsed_pred,
@@ -372,6 +387,7 @@ class MMMUEvaluator:
                 eval_samples.append({
                     'id': res['id'],
                     'question': res_origin_data['question'],
+                    'question_type': res_origin_data['question_type'],
                     'answer': res_origin_data['answer'],
                     'response': response,
                     'parsed_pred': parsed_pred,
@@ -379,3 +395,8 @@ class MMMUEvaluator:
         return eval_samples
         
         
+if __name__ == "__main__":
+
+    evaluator = MMMUEvaluator(results_file_path='outputs/mmmu_validation_vllm_results_20250506_1704.pkl')
+    results = evaluator.evaluate()
+    # print(results)

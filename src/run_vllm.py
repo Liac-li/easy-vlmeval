@@ -1,7 +1,8 @@
 import argparse
 import os
 import base64
-from typing import Union, List, Dict
+import pickle
+from typing import Union, List, Dict, Any
 from PIL import Image
 from io import BytesIO
 import concurrent.futures
@@ -37,6 +38,43 @@ def parse_args():
 
     return parser.parse_args()
 
+def batch_auto_load_image(image_data: List[Dict[str, Any]]):
+    """
+        Auto load image from image_data
+    """
+    image_data_list = []
+    has_multiple = False
+    for data in image_data:
+        image_data, is_multiple = auto_load_image(data)
+        has_multiple = True if is_multiple else has_multiple 
+        image_data_list.append(image_data)
+    return image_data_list, has_multiple
+
+def auto_load_image(image_data: Dict[str, Any]):
+    """
+        Supported image data keys:
+        - path[str]: path to image
+        - bytes[bytes]: bytes of image
+        - item[Image.Image]: PIL image
+        
+        return: 
+            [data, is_list]
+    """
+    image_path = image_data.get('path')
+    if image_path is not None:
+        if isinstance(image_path, str):
+            return image_path, False
+        elif isinstance(image_path, list):
+            return image_path, True
+    elif image_data.get('item') is not None:
+        if isinstance(image_data['item'], Image.Image):
+            return image_data['item'], False
+        elif isinstance(image_data['item'], list):
+            return image_data['item'], True
+    else:
+        raise ValueError(f"Unsupported image data type: {type(image_data)}")
+    
+
 def main(args, config):
     logger.info(f"Starting run with config path: {args.config}")
 
@@ -48,7 +86,9 @@ def main(args, config):
     dataset_config = config['datasets']['config'][dataset_name]
     dataset_class = supported_datasets[dataset_name]
     dataset = dataset_class(split=dataset_split, data_dir=dataset_config['local_dir'], reuse_saved=args.reuse_saved) #!
+    dataset_max_image_per_prompt = dataset.max_image_per_prompt
     logger.info(f"Dataset {dataset_name} loaded with size: {len(dataset)}")
+    logger.info(f"Dataset {dataset_name} max image per prompt: {dataset_max_image_per_prompt}")
 
     # 获取prompt模板
     prompt_config = config['prompts']['config'][args.prompt]
@@ -56,7 +96,7 @@ def main(args, config):
     prompt_template = prompt_config['user']
     logger.info(f"Using prompt template: {prompt_template}")
 
-    model = QwenVLRunner(args.model_path, args.gpu_num)
+    model = QwenVLRunner(args.model_path, args.gpu_num, max_image_per_prompt=dataset_max_image_per_prompt)
 
     # 存储所有结果
     all_results = []
@@ -70,10 +110,12 @@ def main(args, config):
             
             queries = [prompt_template.format(query=sample['query']) 
                        for sample in samples]
-            images_path = [sample['image']['path'] for sample in samples]
-            
+            images_data, has_multiple = batch_auto_load_image([sample['image'] for sample in samples])
+
             try:
-                batch_results = model.generate(queries, images_path)
+
+                batch_results = model.generate(queries, images_data)
+
                 for sample, result in zip(samples, batch_results):
                     all_results.append({
                         'id': sample['id'],
@@ -94,10 +136,10 @@ def main(args, config):
                 os.chmod(args.output_dir, 0o777)
                 step_output_path = os.path.join(
                     args.output_dir,
-                    f"{dataset_name}_{dataset_split}_{args.model}_intermediate.json"
+                    f"{dataset_name}_{dataset_split}_{args.model}_intermediate.pkl"
                 )
-                with open(step_output_path, 'w', encoding='utf-8') as f:
-                    json.dump(all_results, f, ensure_ascii=False, indent=2)
+                with open(step_output_path, 'wb') as f:
+                    pickle.dump(all_results, f)
                 logger.info(f"Step {len(all_results)}: Results saved to {step_output_path}")
 
     # 保存最终结果
@@ -105,13 +147,13 @@ def main(args, config):
         os.makedirs(args.output_dir, exist_ok=True)
         # 确保目录有正确的权限
         os.chmod(args.output_dir, 0o777)
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%')
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M')
         output_path = os.path.join(
             args.output_dir,
-            f"{dataset_name}_{dataset_split}_{args.model}_results_{timestamp}.json"
+            f"{dataset_name}_{dataset_split}_{args.model}_results_{timestamp}.pkl"
         )
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(all_results, f, ensure_ascii=False, indent=2)
+        with open(output_path, 'wb') as f:
+            pickle.dump(all_results, f)
         logger.info(f"Results saved to {output_path}")
 
     # 如果需要评估
@@ -139,6 +181,3 @@ if __name__ == "__main__":
     args = parse_args()
     config = load_config(args.config)
     main(args, config)
-
-
-
