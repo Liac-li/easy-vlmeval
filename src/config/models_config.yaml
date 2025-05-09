@@ -5,5 +5,5 @@ vllm:
   api_key: api-lyt-78fd9
   
 openai:
-  api_key: sk-viE4vGraznKsTmxP458b38306e9b42F4863aCb1aD63a72F1
-  api_base_url: https://api.lmtchina.com/v1
+  api_key: 
+  api_base_url: 
