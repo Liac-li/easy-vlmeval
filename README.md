@@ -1,152 +1,88 @@
 # Easy-VLMEval
 
-一个简单易用的视觉语言模型评估工具，专注于基准测试的下载、运行和评估。
+一个专注于视觉语言模型（VLM）评测的简单易用工具，支持多种主流基准测试，便于快速集成和扩展。
 
 ## 功能特点
 
-- 支持多个基准测试数据集（MMMU, MathVista等）
-- 基于vLLM的本地API服务
-- 灵活的提示词模板管理
-- 简单的评估流程
+- 支持多种视觉语言基准测试数据集（如 MMMU、MathVista 等），基于官方数据集格式，无需修改原始 prompt 逻辑
+- 支持基于 vLLM 的本地 API 服务推理与评测
+- 灵活的提示词模板与模型参数配置
+- 简单高效的评测流程，自动化推理与结果评估
 
 ## 目录结构
 
 ```
 easy-vlmeval/
-├── benchmarks/          # 基准测试数据集
-├── configs/            # 配置文件
-│   ├── prompts/       # 提示词模板
-│   └── models/        # 模型配置
-├── src/               # 源代码
-│   ├── downloader.py  # 数据集下载
-│   ├── evaluator.py   # 评估脚本
-│   └── utils.py       # 工具函数
-└── scripts/           # 运行脚本
+├── data/                  # 数据集存放目录（需手动下载）
+│   └── <dataset_name>/    # 如 MMMU、MathVista 等
+├── outputs/               # 推理与评测结果输出目录
+├── scripts/               # 常用运行脚本
+├── src/                   # 核心源代码
+│   ├── benchmarks/        # 各基准测试相关代码
+│   ├── config/            # 配置管理
+│   ├── evaluator/         # 评测流程与评测器
+│   ├── examples/          # 示例代码（如 loaddata/）
+│   ├── tasks/             # 任务定义
+│   ├── utils/             # 工具函数
+│   └── run_vllm.py        # vLLM 推理主入口
+├── requirements.txt       # 依赖包列表
+└── README.md              # 项目说明文档
 ```
 
-## 安装
+## 安装方法
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 使用方法
+## 数据集准备
 
-1. 配置模型和提示词模板
-2. 下载基准测试数据集
-3. 运行评估
+1. 在 `data/` 目录下新建对应数据集文件夹，并下载官方数据集（如 MMMU、MathVista 等）。
+2. 解压所需图片压缩包，保持原始目录结构，无需修改。
+3. 以 MMMU 为例，下载命令如下：
+
+```bash
+cd data
+huggingface-cli download --resume-download MMMU/MMMU --local-dir MMMU
+```
+
+4. 在 `src/config/datasets_config.yaml` 中配置数据集本地路径（以 `data/` 目录为基准）。
+
+## 运行与评测
+
+以 vLLM 本地推理为例，假设当前路径为项目根目录：
+
+```bash
+python src/run_vllm.py --modal-path PATH_TO_MODEL_DIR --gpu-num 1 --dataset mmmu@validation --prompt r1_think_prompt --output_dir outputs --eval
+```
+
+- `--modal-path`：模型目录路径
+- `--gpu-num`：使用 GPU 数量
+- `--dataset`：数据集及子集（如 mmmu@validation）
+- `--prompt`：提示词模板名称
+- `--output_dir`：输出目录
+- `--eval`：自动评测推理结果
 
 ## 配置说明
 
-在 `configs/prompts/` 目录下创建提示词模板，在 `configs/models/` 目录下配置模型参数。
+- 在 `configs/prompts/` 目录下创建和管理提示词模板。
+- 在 `configs/models/` 目录下配置模型参数。
 
-## 评估流程
+## 数据格式说明
 
-1. 启动vLLM服务
-2. 运行评估脚本
-3. 查看评估结果
+推理与评测过程中，数据样例如下：
 
-## 数据说明
 ```python
-    converted_data = {
-        "id": sample['pid'],
-        "query": sample['query'],
-        "answer": sample['answer'],
-        "choices": sample['choices'] if sample['choices'] else None,
-        "image": {
-            "path": str(self.image_dir / sample['image']),
-            "bytes": sample['decoded_image']
-        },
-        "origin_data": sample  # 保留原始数据
-    }
+converted_data = {
+    "id": sample['pid'],
+    "query": sample['query'],
+    "answer": sample['answer'],
+    "choices": sample['choices'] if sample['choices'] else None,
+    "image": {
+        "path": "absolute_path_to_image",
+        "bytes": "bytes_encoded_image",
+        "item": PIL.Image
+    },
+    "origin_data": sample  # 保留原始数据
+}
 ```
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://git.nju.edu.cn/leelin42/easy-vlmeval.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://git.nju.edu.cn/leelin42/easy-vlmeval/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
